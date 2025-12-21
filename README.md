@@ -1,38 +1,36 @@
-# Hyperkey ⌨️
+# Hyperkey
 
 [![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A terminal-based keyboard practice application inspired by [keybr.com](https://keybr.com). Learn touch typing with adaptive learning that focuses on your weak keys.
 
-![Hyperkey Demo](https://via.placeholder.com/800x400?text=Demo+Coming+Soon)
+## Features
 
-## ✨ Features
-
-### 🎯 Adaptive Learning (keybr-style)
+### Adaptive Learning (keybr-style)
 - **Progressive Letter Unlocking** - Start with home row keys, unlock more as you improve
 - **Confidence-Based Progression** - Each letter tracked individually (accuracy + speed)
 - **Weak Key Focus** - Struggling letters appear more frequently
 - **Phonetic Words** - Pronounceable pseudo-words for natural typing
 
-### ⌨️ Multiple Keyboard Layouts
+### Multiple Keyboard Layouts
 | Layout | Home Row | Same Finger |
 |--------|----------|-------------|
 | QWERTY | 30% | 19% |
 | Dvorak | 68% | 18% |
 | Colemak | 70% | 15% |
 
-### 📊 Real-time Statistics
+### Real-time Statistics
 - Words Per Minute (WPM) - correct characters only
 - Accuracy percentage
 - Keyboard heatmap
 - Per-key error tracking
 
-### 🔐 Google Account (Optional)
+### Google Account (Optional)
 - Sign in with Google (device code flow)
 - Local progress saved to `~/.hyperkey/`
 
-## 🚀 Installation
+## Installation
 
 ### From Source
 ```bash
@@ -47,7 +45,7 @@ go build -o hyperkey ./cmd/hyperkey
 go install github.com/farseen/hyperkey/cmd/hyperkey@latest
 ```
 
-## 🎮 Usage
+## Usage
 
 ```bash
 ./hyperkey
@@ -56,7 +54,7 @@ go install github.com/farseen/hyperkey/cmd/hyperkey@latest
 ### Controls
 | Key | Action |
 |-----|--------|
-| ↑/↓ or j/k | Navigate menu |
+| Up/Down or j/k | Navigate menu |
 | Enter | Select |
 | Esc | Return to menu |
 | q or Ctrl+C | Quit |
@@ -67,7 +65,7 @@ go install github.com/farseen/hyperkey/cmd/hyperkey@latest
 3. **Build confidence** - each letter needs 70% confidence to unlock the next
 4. **Progress automatically** - new letters unlock as you master current ones
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 hyperkey/
@@ -85,14 +83,14 @@ hyperkey/
 └── CONTRIBUTING.md
 ```
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **[Go](https://go.dev)** - Fast, simple, compiles to single binary
 - **[BubbleTea](https://github.com/charmbracelet/bubbletea)** - TUI framework (Elm architecture)
 - **[Lip Gloss](https://github.com/charmbracelet/lipgloss)** - Terminal styling
 - **[Bubbles](https://github.com/charmbracelet/bubbles)** - UI components
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
@@ -103,11 +101,11 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 - [ ] Typing games
 - [ ] Tests
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](LICENSE)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Inspired by [keybr.com](https://keybr.com)
 - Built with [Charm](https://charm.sh) tools
