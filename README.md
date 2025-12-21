@@ -28,13 +28,6 @@ A terminal-based keyboard practice application inspired by [keybr.com](https://k
 
 ## Installation
 
-### Try It Instantly (SSH)
-No installation needed! Just SSH in:
-```bash
-ssh hyperkey.io
-```
-*Your progress is saved by your SSH key.*
-
 ### Homebrew (macOS/Linux)
 ```bash
 brew tap farseenmanekhan1232/tap
@@ -57,11 +50,6 @@ sudo apk add --allow-untrusted hyperkey_*.apk
 
 ### Windows
 Download the `.zip` from [Releases](https://github.com/farseenmanekhan1232/hyperkey/releases) and extract.
-
-Or via winget (coming soon):
-```powershell
-winget install hyperkey
-```
 
 ### Go Install
 ```bash
@@ -126,12 +114,15 @@ hyperkey/
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### Roadmap
-- [ ] More layouts (Workman, Colemak-DH)
-- [ ] Cloud sync
-- [ ] Interactive settings UI
-- [ ] Typing games
-- [ ] Tests
+## Coming Soon
+
+- **SSH Access** - `ssh hyperkey.io` (no installation needed!)
+- **Winget** - `winget install hyperkey` for Windows
+- More layouts (Workman, Colemak-DH)
+- Cloud sync with Google account
+- Interactive settings UI
+- Typing games
+- Tests
 
 ## License
 
