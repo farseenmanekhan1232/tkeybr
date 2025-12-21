@@ -1,4 +1,4 @@
-module github.com/farseenmanekhan1232/hyperkey
+module github.com/farseenmanekhan1232/tkeybr
 
 go 1.25.5
 

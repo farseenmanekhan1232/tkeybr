@@ -31,43 +31,43 @@ A terminal-based keyboard practice application inspired by [keybr.com](https://k
 ### Homebrew (macOS/Linux)
 ```bash
 brew tap farseenmanekhan1232/tap
-brew install hyperkey --formula
+brew install tkeybr
 ```
 
 ### Linux Packages
-Download `.deb`, `.rpm`, or `.apk` from [Releases](https://github.com/farseenmanekhan1232/hyperkey/releases).
+Download `.deb`, `.rpm`, or `.apk` from [Releases](https://github.com/farseenmanekhan1232/tkeybr/releases).
 
 ```bash
 # Debian/Ubuntu
-sudo dpkg -i hyperkey_*.deb
+sudo dpkg -i tkeybr_*.deb
 
 # Fedora/RHEL
-sudo rpm -i hyperkey_*.rpm
+sudo rpm -i tkeybr_*.rpm
 
 # Alpine
-sudo apk add --allow-untrusted hyperkey_*.apk
+sudo apk add --allow-untrusted tkeybr_*.apk
 ```
 
 ### Windows
-Download the `.zip` from [Releases](https://github.com/farseenmanekhan1232/hyperkey/releases) and extract.
+Download the `.zip` from [Releases](https://github.com/farseenmanekhan1232/tkeybr/releases) and extract.
 
 ### Go Install
 ```bash
-go install github.com/farseenmanekhan1232/hyperkey/cmd/hyperkey@latest
+go install github.com/farseenmanekhan1232/tkeybr/cmd/tkeybr@latest
 ```
 
 ### From Source
 ```bash
-git clone https://github.com/farseenmanekhan1232/hyperkey.git
-cd hyperkey
-go build -o hyperkey ./cmd/hyperkey
-./hyperkey
+git clone https://github.com/farseenmanekhan1232/tkeybr.git
+cd tkeybr
+go build -o tkeybr ./cmd/tkeybr
+./tkeybr
 ```
 
 ## Usage
 
 ```bash
-./hyperkey
+./tkeybr
 ```
 
 ### Controls
@@ -87,15 +87,15 @@ go build -o hyperkey ./cmd/hyperkey
 ## Project Structure
 
 ```
-hyperkey/
+tkeybr/
 ├── cmd/
-│   ├── hyperkey/          # CLI entry point
-│   └── server/            # SSH server (for hyperkey.io)
+│   ├── tkeybr/          # CLI entry point
+│   └── server/            # SSH server (for tkeybr.io)
 ├── internal/
 │   ├── app/               # BubbleTea application
 │   ├── engine/            # Typing engine, stats, layouts
 │   ├── auth/              # Google OAuth
-│   ├── storage/           # Local persistence (~/.hyperkey/)
+│   ├── storage/           # Local persistence (~/.tkeybr/)
 │   └── ui/
 │       ├── components/    # Keyboard, typing area, stats, charts
 │       └── styles/        # Lipgloss color theme
@@ -116,8 +116,8 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Coming Soon
 
-- **SSH Access** - `ssh hyperkey.io` (no installation needed!)
-- **Winget** - `winget install hyperkey` for Windows
+- **SSH Access** - `ssh tkeybr.io` (no installation needed!)
+- **Winget** - `winget install tkeybr` for Windows
 - More layouts (Workman, Colemak-DH)
 - Cloud sync with Google account
 - Interactive settings UI

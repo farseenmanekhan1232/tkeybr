@@ -46,24 +46,24 @@ Thank you for your interest in contributing to Hyperkey! 🎉
 
 ```bash
 # Clone
-git clone https://github.com/yourusername/hyperkey.git
-cd hyperkey
+git clone https://github.com/yourusername/tkeybr.git
+cd tkeybr
 
 # Install dependencies
 go mod download
 
 # Build
-go build -o hyperkey ./cmd/hyperkey
+go build -o tkeybr ./cmd/tkeybr
 
 # Run
-./hyperkey
+./tkeybr
 ```
 
 ## Project Structure
 
 ```
-hyperkey/
-├── cmd/hyperkey/          # Entry point
+tkeybr/
+├── cmd/tkeybr/          # Entry point
 ├── internal/
 │   ├── app/               # BubbleTea application
 │   ├── engine/            # Typing engine, stats, layouts

@@ -65,7 +65,7 @@ type GoogleAuth struct {
 // NewGoogleAuth creates a new Google auth handler
 func NewGoogleAuth(clientID string) *GoogleAuth {
 	homeDir, _ := os.UserHomeDir()
-	storagePath := filepath.Join(homeDir, ".hyperkey", "auth.json")
+	storagePath := filepath.Join(homeDir, ".tkeybr", "auth.json")
 
 	return &GoogleAuth{
 		clientID:    clientID,

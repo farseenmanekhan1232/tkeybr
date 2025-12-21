@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/farseenmanekhan1232/hyperkey/internal/engine"
+	"github.com/farseenmanekhan1232/tkeybr/internal/engine"
 )
 
 // UserData represents all stored user data
@@ -32,7 +32,7 @@ type LocalStorage struct {
 // NewLocalStorage creates a new local storage handler
 func NewLocalStorage() *LocalStorage {
 	homeDir, _ := os.UserHomeDir()
-	basePath := filepath.Join(homeDir, ".hyperkey")
+	basePath := filepath.Join(homeDir, ".tkeybr")
 	return &LocalStorage{basePath: basePath}
 }
 

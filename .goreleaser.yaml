@@ -1,15 +1,15 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 
-project_name: hyperkey
+project_name: tkeybr
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - id: hyperkey
-    main: ./cmd/hyperkey
-    binary: hyperkey
+  - id: tkeybr
+    main: ./cmd/tkeybr
+    binary: tkeybr
     env:
       - CGO_ENABLED=0
     goos:
@@ -22,9 +22,9 @@ builds:
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
 
-  - id: hyperkey-server
+  - id: tkeybr-server
     main: ./cmd/server
-    binary: hyperkey-server
+    binary: tkeybr-server
     env:
       - CGO_ENABLED=0
     goos:
@@ -36,18 +36,18 @@ builds:
       - -s -w -X main.version={{.Version}}
 
 archives:
-  - id: hyperkey-archive
+  - id: tkeybr-archive
     builds:
-      - hyperkey
+      - tkeybr
     format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows
         format: zip
 
-  - id: hyperkey-server-archive
+  - id: tkeybr-server-archive
     builds:
-      - hyperkey-server
+      - tkeybr-server
     format: tar.gz
     name_template: "{{ .ProjectName }}-server_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
@@ -63,29 +63,29 @@ changelog:
       - '^chore:'
 
 brews:
-  - name: hyperkey
+  - name: tkeybr
     ids:
-      - hyperkey-archive
+      - tkeybr-archive
     repository:
       owner: farseenmanekhan1232
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     directory: Formula
-    homepage: "https://github.com/farseenmanekhan1232/hyperkey"
+    homepage: "https://github.com/farseenmanekhan1232/tkeybr"
     description: "Terminal-based keyboard practice app with adaptive learning"
     license: "MIT"
     install: |
-      bin.install "hyperkey"
+      bin.install "tkeybr"
     test: |
-      system "#{bin}/hyperkey", "--version"
+      system "#{bin}/tkeybr", "--version"
 
 nfpms:
   - id: packages
     builds:
-      - hyperkey
-    package_name: hyperkey
+      - tkeybr
+    package_name: tkeybr
     vendor: Hyperkey
-    homepage: https://github.com/farseenmanekhan1232/hyperkey
+    homepage: https://github.com/farseenmanekhan1232/tkeybr
     maintainer: Farseen <farseen@example.com>
     description: Terminal-based keyboard practice app with adaptive learning
     license: MIT
@@ -98,6 +98,6 @@ nfpms:
 release:
   github:
     owner: farseenmanekhan1232
-    name: hyperkey
+    name: tkeybr
   draft: false
   prerelease: auto

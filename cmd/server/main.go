@@ -20,9 +20,9 @@ import (
 	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
 	gossh "golang.org/x/crypto/ssh"
-	"github.com/farseenmanekhan1232/hyperkey/internal/engine"
-	"github.com/farseenmanekhan1232/hyperkey/internal/ui/components"
-	"github.com/farseenmanekhan1232/hyperkey/internal/ui/styles"
+	"github.com/farseenmanekhan1232/tkeybr/internal/engine"
+	"github.com/farseenmanekhan1232/tkeybr/internal/ui/components"
+	"github.com/farseenmanekhan1232/tkeybr/internal/ui/styles"
 )
 
 const (
@@ -33,7 +33,7 @@ const (
 func main() {
 	s, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),
-		wish.WithHostKeyPath(".ssh/hyperkey_ed25519"),
+		wish.WithHostKeyPath(".ssh/tkeybr_ed25519"),
 		wish.WithMiddleware(
 			bubbletea.Middleware(teaHandler),
 			activeterm.Middleware(),
