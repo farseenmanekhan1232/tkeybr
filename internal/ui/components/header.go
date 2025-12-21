@@ -2,7 +2,7 @@ package components
 
 import (
 	"github.com/charmbracelet/lipgloss"
-	"github.com/farseen/hyperkey/internal/ui/styles"
+	"github.com/farseenmanekhan1232/hyperkey/internal/ui/styles"
 )
 
 // Header renders the app header

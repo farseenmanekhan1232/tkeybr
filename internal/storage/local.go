@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/farseen/hyperkey/internal/engine"
+	"github.com/farseenmanekhan1232/hyperkey/internal/engine"
 )
 
 // UserData represents all stored user data

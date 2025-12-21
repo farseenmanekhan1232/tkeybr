@@ -26,23 +26,54 @@ A terminal-based keyboard practice application inspired by [keybr.com](https://k
 - Keyboard heatmap
 - Per-key error tracking
 
-### Google Account (Optional)
-- Sign in with Google (device code flow)
-- Local progress saved to `~/.hyperkey/`
-
 ## Installation
 
-### From Source
+### Try It Instantly (SSH)
+No installation needed! Just SSH in:
 ```bash
-git clone https://github.com/farseen/hyperkey.git
-cd hyperkey
-go build -o hyperkey ./cmd/hyperkey
-./hyperkey
+ssh hyperkey.io
+```
+*Your progress is saved by your SSH key.*
+
+### Homebrew (macOS/Linux)
+```bash
+brew tap farseenmanekhan1232/tap
+brew install hyperkey
+```
+
+### Linux Packages
+Download `.deb`, `.rpm`, or `.apk` from [Releases](https://github.com/farseenmanekhan1232/hyperkey/releases).
+
+```bash
+# Debian/Ubuntu
+sudo dpkg -i hyperkey_*.deb
+
+# Fedora/RHEL
+sudo rpm -i hyperkey_*.rpm
+
+# Alpine
+sudo apk add --allow-untrusted hyperkey_*.apk
+```
+
+### Windows
+Download the `.zip` from [Releases](https://github.com/farseenmanekhan1232/hyperkey/releases) and extract.
+
+Or via winget (coming soon):
+```powershell
+winget install hyperkey
 ```
 
 ### Go Install
 ```bash
-go install github.com/farseen/hyperkey/cmd/hyperkey@latest
+go install github.com/farseenmanekhan1232/hyperkey/cmd/hyperkey@latest
+```
+
+### From Source
+```bash
+git clone https://github.com/farseenmanekhan1232/hyperkey.git
+cd hyperkey
+go build -o hyperkey ./cmd/hyperkey
+./hyperkey
 ```
 
 ## Usage
@@ -69,7 +100,9 @@ go install github.com/farseen/hyperkey/cmd/hyperkey@latest
 
 ```
 hyperkey/
-├── cmd/hyperkey/          # Entry point
+├── cmd/
+│   ├── hyperkey/          # CLI entry point
+│   └── server/            # SSH server (for hyperkey.io)
 ├── internal/
 │   ├── app/               # BubbleTea application
 │   ├── engine/            # Typing engine, stats, layouts
@@ -78,9 +111,8 @@ hyperkey/
 │   └── ui/
 │       ├── components/    # Keyboard, typing area, stats, charts
 │       └── styles/        # Lipgloss color theme
-├── README.md
-├── LICENSE
-└── CONTRIBUTING.md
+├── .goreleaser.yaml       # Cross-platform release config
+└── .github/workflows/     # CI/CD
 ```
 
 ## Tech Stack
@@ -88,7 +120,7 @@ hyperkey/
 - **[Go](https://go.dev)** - Fast, simple, compiles to single binary
 - **[BubbleTea](https://github.com/charmbracelet/bubbletea)** - TUI framework (Elm architecture)
 - **[Lip Gloss](https://github.com/charmbracelet/lipgloss)** - Terminal styling
-- **[Bubbles](https://github.com/charmbracelet/bubbles)** - UI components
+- **[Wish](https://github.com/charmbracelet/wish)** - SSH server for TUI apps
 
 ## Contributing
 

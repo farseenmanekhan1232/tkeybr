@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: hyperkey
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: hyperkey
+    main: ./cmd/hyperkey
+    binary: hyperkey
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
+
+  - id: hyperkey-server
+    main: ./cmd/server
+    binary: hyperkey-server
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+
+brews:
+  - name: hyperkey
+    repository:
+      owner: farseenmanekhan1232
+      name: homebrew-tap
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    folder: Formula
+    homepage: "https://github.com/farseenmanekhan1232/hyperkey"
+    description: "Terminal-based keyboard practice app with adaptive learning"
+    license: "MIT"
+    install: |
+      bin.install "hyperkey"
+    test: |
+      system "#{bin}/hyperkey", "--version"
+
+# Winget is published via winget-pkgs repo PR (manual or via wingetcreate)
+# See: https://github.com/microsoft/winget-pkgs
+# The zip archives created above work with winget
+
+nfpms:
+  - id: packages
+    package_name: hyperkey
+    vendor: Hyperkey
+    homepage: https://github.com/farseenmanekhan1232/hyperkey
+    maintainer: Farseen <farseen@example.com>
+    description: Terminal-based keyboard practice app with adaptive learning
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin
+
+release:
+  github:
+    owner: farseenmanekhan1232
+    name: hyperkey
+  draft: false
+  prerelease: auto

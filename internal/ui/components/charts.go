@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/farseen/hyperkey/internal/engine"
-	"github.com/farseen/hyperkey/internal/ui/styles"
+	"github.com/farseenmanekhan1232/hyperkey/internal/engine"
+	"github.com/farseenmanekhan1232/hyperkey/internal/ui/styles"
 )
 
 // Charts provides ASCII chart rendering for statistics
