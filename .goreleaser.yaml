@@ -36,12 +36,20 @@ builds:
       - -s -w -X main.version={{.Version}}
 
 archives:
-  - id: default
+  - id: hyperkey-archive
+    builds:
+      - hyperkey
     format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows
         format: zip
+
+  - id: hyperkey-server-archive
+    builds:
+      - hyperkey-server
+    format: tar.gz
+    name_template: "{{ .ProjectName }}-server_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
   name_template: 'checksums.txt'
@@ -56,11 +64,13 @@ changelog:
 
 brews:
   - name: hyperkey
+    ids:
+      - hyperkey-archive
     repository:
       owner: farseenmanekhan1232
       name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
-    folder: Formula
+    directory: Formula
     homepage: "https://github.com/farseenmanekhan1232/hyperkey"
     description: "Terminal-based keyboard practice app with adaptive learning"
     license: "MIT"
@@ -69,12 +79,10 @@ brews:
     test: |
       system "#{bin}/hyperkey", "--version"
 
-# Winget is published via winget-pkgs repo PR (manual or via wingetcreate)
-# See: https://github.com/microsoft/winget-pkgs
-# The zip archives created above work with winget
-
 nfpms:
   - id: packages
+    builds:
+      - hyperkey
     package_name: hyperkey
     vendor: Hyperkey
     homepage: https://github.com/farseenmanekhan1232/hyperkey
