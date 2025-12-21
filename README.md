@@ -31,7 +31,7 @@ A terminal-based keyboard practice application inspired by [keybr.com](https://k
 ### Homebrew (macOS/Linux)
 ```bash
 brew tap farseenmanekhan1232/tap
-brew install hyperkey
+brew install hyperkey --formula
 ```
 
 ### Linux Packages
