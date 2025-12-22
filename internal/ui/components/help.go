@@ -41,7 +41,7 @@ func (h *HelpScreen) Render() string {
 		MarginBottom(1)
 
 	sectionStyle := lipgloss.NewStyle().
-		Foreground(styles.Secondary).
+		Foreground(styles.Accent).
 		Bold(true).
 		MarginTop(1)
 
@@ -56,10 +56,10 @@ func (h *HelpScreen) Render() string {
 
 	// Build help content
 	content := []string{
-		titleStyle.Render("📖 How Hyperkey Works"),
+		titleStyle.Render("📖 How tkeybr Works"),
 		"",
 		sectionStyle.Render("Touch Typing"),
-		textStyle.Render("Hyperkey helps you learn touch typing - typing through"),
+		textStyle.Render("tkeybr helps you learn touch typing - typing through"),
 		textStyle.Render("muscle memory without looking at the keyboard."),
 		"",
 		sectionStyle.Render("The Teaching Method"),

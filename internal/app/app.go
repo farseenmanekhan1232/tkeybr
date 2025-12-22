@@ -61,6 +61,9 @@ type Model struct {
 	menuSelection int
 	menuItems     []string
 
+	// Settings state
+	settingsSelection int
+
 	// Ticker for WPM updates
 	tickerActive bool
 }
@@ -77,6 +80,11 @@ func New() Model {
 	}
 	if prefs == nil {
 		prefs = storage.DefaultPreferences()
+	}
+
+	// Apply saved theme
+	if prefs.Theme != "" {
+		styles.SetTheme(prefs.Theme)
 	}
 
 	// Initialize progress tracker with layout
@@ -311,8 +319,71 @@ func (m Model) handleStatsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleSettingsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	// Settings navigation would go here
+	settingsCount := 4 // Layout, Show Keyboard, Word Count, Theme
+
+	switch msg.String() {
+	case "up", "k":
+		if m.settingsSelection > 0 {
+			m.settingsSelection--
+		}
+	case "down", "j":
+		if m.settingsSelection < settingsCount-1 {
+			m.settingsSelection++
+		}
+	case "left", "h":
+		m.adjustSetting(-1)
+	case "right", "l":
+		m.adjustSetting(1)
+	case "enter", " ":
+		m.adjustSetting(1)
+	}
+
 	return m, nil
+}
+
+func (m *Model) adjustSetting(delta int) {
+	switch m.settingsSelection {
+	case 0: // Keyboard Layout
+		layouts := []string{"qwerty", "dvorak", "colemak"}
+		idx := 0
+		for i, l := range layouts {
+			if l == m.preferences.KeyboardLayout {
+				idx = i
+				break
+			}
+		}
+		idx = (idx + delta + len(layouts)) % len(layouts)
+		m.preferences.KeyboardLayout = layouts[idx]
+		m.progressTracker = engine.NewProgressTracker(m.preferences.KeyboardLayout)
+		m.wordGenerator = engine.NewAdaptiveWordGenerator(m.progressTracker)
+
+	case 1: // Show Keyboard
+		m.preferences.ShowKeyboard = !m.preferences.ShowKeyboard
+
+	case 2: // Word Count
+		m.preferences.WordCount += delta * 5
+		if m.preferences.WordCount < 5 {
+			m.preferences.WordCount = 5
+		}
+		if m.preferences.WordCount > 50 {
+			m.preferences.WordCount = 50
+		}
+
+	case 3: // Theme
+		idx := 0
+		for i, name := range styles.ThemeNames {
+			if name == m.preferences.Theme {
+				idx = i
+				break
+			}
+		}
+		idx = (idx + delta + len(styles.ThemeNames)) % len(styles.ThemeNames)
+		m.preferences.Theme = styles.ThemeNames[idx]
+		styles.SetTheme(m.preferences.Theme)
+	}
+
+	// Auto-save preferences
+	m.storage.SavePreferences(m.preferences)
 }
 
 func (m *Model) startNewSession() {
@@ -425,7 +496,7 @@ func (m Model) View() string {
 	
 	// Ad slot at bottom
 	adSlot := styles.AdSlotStyle.Width(m.width - 4).Render(
-		"[ Ad Space - Support Hyperkey ]",
+		"[ Ad Space - Support tkeybr ]",
 	)
 
 	// Calculate available height for content
@@ -464,7 +535,7 @@ func (m Model) renderMenu() string {
 		Foreground(styles.Primary).
 		Bold(true).
 		MarginBottom(1).
-		Render("Welcome to Hyperkey!")
+		Render("Welcome to tkeybr!")
 
 	subtitle := lipgloss.NewStyle().
 		Foreground(styles.TextSecondary).
@@ -580,24 +651,49 @@ func (m Model) renderStats() string {
 
 func (m Model) renderSettings() string {
 	title := lipgloss.NewStyle().
-		Foreground(styles.Primary).
+		Foreground(styles.TextPrimary).
 		Bold(true).
-		MarginBottom(2).
+		MarginBottom(1).
 		Render("Settings")
 
-	settings := []string{
-		fmt.Sprintf("Keyboard Layout: %s", strings.ToUpper(m.preferences.KeyboardLayout)),
-		fmt.Sprintf("Show Keyboard: %v", m.preferences.ShowKeyboard),
-		fmt.Sprintf("Word Count: %d", m.preferences.WordCount),
+	// Settings items with values
+	settings := []struct {
+		label string
+		value string
+	}{
+		{"Keyboard Layout", strings.ToUpper(m.preferences.KeyboardLayout)},
+		{"Show Keyboard", fmt.Sprintf("%v", m.preferences.ShowKeyboard)},
+		{"Word Count", fmt.Sprintf("%d", m.preferences.WordCount)},
+		{"Theme", m.preferences.Theme},
 	}
+
+	var items []string
+	for i, s := range settings {
+		var line string
+		if i == m.settingsSelection {
+			// Selected item with arrows
+			arrow := lipgloss.NewStyle().Foreground(styles.Accent).Render("◀ ")
+			arrowR := lipgloss.NewStyle().Foreground(styles.Accent).Render(" ▶")
+			label := lipgloss.NewStyle().Foreground(styles.TextPrimary).Bold(true).Render(s.label)
+			value := lipgloss.NewStyle().Foreground(styles.Accent).Bold(true).Render(s.value)
+			line = fmt.Sprintf("  %s %s: %s%s%s", "▸", label, arrow, value, arrowR)
+		} else {
+			label := lipgloss.NewStyle().Foreground(styles.TextSecondary).Render(s.label)
+			value := lipgloss.NewStyle().Foreground(styles.TextMuted).Render(s.value)
+			line = fmt.Sprintf("    %s: %s", label, value)
+		}
+		items = append(items, line)
+	}
+
+	help := styles.HelpStyle.Render("↑/↓ Navigate • ←/→ Adjust • Esc Back")
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
 		"",
-		strings.Join(settings, "\n"),
+		strings.Join(items, "\n"),
 		"",
-		styles.HelpStyle.Render("Press Esc to go back"),
+		help,
 	)
 }
 

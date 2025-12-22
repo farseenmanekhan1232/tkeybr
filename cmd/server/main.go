@@ -206,7 +206,7 @@ func (m SSHModel) renderWelcome() string {
 	title := lipgloss.NewStyle().
 		Foreground(styles.Primary).
 		Bold(true).
-		Render("Welcome to Hyperkey!")
+		Render("Welcome to tkeybr!")
 
 	userInfo := lipgloss.NewStyle().
 		Foreground(styles.TextMuted).

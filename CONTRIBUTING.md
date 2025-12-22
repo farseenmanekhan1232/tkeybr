@@ -1,6 +1,6 @@
-# Contributing to Hyperkey
+# Contributing to tkeybr
 
-Thank you for your interest in contributing to Hyperkey! 🎉
+Thank you for your interest in contributing to tkeybr! 🎉
 
 ## How to Contribute
 

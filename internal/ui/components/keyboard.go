@@ -48,7 +48,7 @@ var (
 
 	simpleKeyActiveStyle = lipgloss.NewStyle().
 		Foreground(styles.BgDark).
-		Background(styles.Secondary).
+		Background(styles.Accent).
 		Bold(true).
 		Padding(0, 1).
 		MarginRight(1)
@@ -119,7 +119,7 @@ func (k *Keyboard) RenderCompact() string {
 
 			var fg lipgloss.Color
 			if key == k.activeKey || k.activeKey == rune(strings.ToUpper(keyStr)[0]) {
-				fg = styles.Secondary
+				fg = styles.Accent
 				keyDisplay = strings.ToUpper(keyStr)
 			} else if _, isWeak := k.weakKeys[key]; isWeak {
 				fg = styles.Warning

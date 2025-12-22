@@ -39,7 +39,7 @@ func (h *Header) Render(width int) string {
 	logo := lipgloss.NewStyle().
 		Foreground(styles.Primary).
 		Bold(true).
-		Render("⌨  HYPERKEY")
+		Render("⌨  TKEYBR")
 
 	subtitle := lipgloss.NewStyle().
 		Foreground(styles.TextMuted).
@@ -84,5 +84,5 @@ func (h *Header) RenderMinimal() string {
 	return lipgloss.NewStyle().
 		Foreground(styles.Primary).
 		Bold(true).
-		Render("⌨ HYPERKEY")
+		Render("⌨ TKEYBR")
 }

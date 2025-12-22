@@ -22,6 +22,7 @@ type UserPreferences struct {
 	WordMode       string `json:"word_mode"` // "phonetic", "real", "mixed"
 	Difficulty     int    `json:"difficulty"`
 	WordCount      int    `json:"word_count"`
+	Theme          string `json:"theme"` // "minimal", "dracula", "nord", etc.
 }
 
 // LocalStorage handles local file storage
@@ -88,6 +89,7 @@ func DefaultPreferences() *UserPreferences {
 		WordMode:       "real",
 		Difficulty:     5,
 		WordCount:      15,
+		Theme:          "minimal",
 	}
 }
 

@@ -78,7 +78,7 @@ func (sp *StatsPanel) renderFull(stats *engine.Stats) string {
 	)
 	charsBox := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(styles.Secondary).
+		BorderForeground(styles.Accent).
 		Padding(0, 2).
 		Render(chars)
 
