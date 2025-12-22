@@ -1,0 +1,8 @@
+name = "tkeybr-leaderboard"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Secrets to be set via wrangler secret put
+# - API_SECRET_TOKEN: Token for authenticating GitHub Actions
+# - FIREBASE_PROJECT_ID: Firebase project ID
+# - FIREBASE_SERVICE_ACCOUNT: Base64 encoded service account JSON

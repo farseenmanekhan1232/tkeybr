@@ -437,7 +437,7 @@ func (m Model) handleStatsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleSettingsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	settingsCount := 4 // Layout, Show Keyboard, Word Count, Theme
+	settingsCount := 6 // Layout, Show Keyboard, Word Count, Theme, Leaderboard, Display Name
 
 	switch msg.String() {
 	case "up", "k":
@@ -498,6 +498,27 @@ func (m *Model) adjustSetting(delta int) {
 		idx = (idx + delta + len(styles.ThemeNames)) % len(styles.ThemeNames)
 		m.preferences.Theme = styles.ThemeNames[idx]
 		styles.SetTheme(m.preferences.Theme)
+
+	case 4: // Show on Leaderboard
+		m.preferences.ShowOnLeaderboard = !m.preferences.ShowOnLeaderboard
+		// Sync to leaderboard when toggling
+		if m.syncStorage != nil && m.syncStorage.Cloud() != nil {
+			go m.syncStorage.Cloud().SyncToLeaderboard(m.preferences, m.stats)
+		}
+
+	case 5: // Display Name (cycle through some preset options or show current)
+		// For now, just show it - a proper text input would require more UI work
+		// Users can toggle between preset names or "Anonymous"
+		presets := []string{"Anonymous", "SpeedyTyper", "KeyboardNinja", "TypeMaster"}
+		idx := 0
+		for i, name := range presets {
+			if name == m.preferences.DisplayName {
+				idx = i
+				break
+			}
+		}
+		idx = (idx + delta + len(presets)) % len(presets)
+		m.preferences.DisplayName = presets[idx]
 	}
 
 	// Auto-save preferences
@@ -796,6 +817,15 @@ func (m Model) renderSettings() string {
 		Render("Settings")
 
 	// Settings items with values
+	displayName := m.preferences.DisplayName
+	if displayName == "" {
+		displayName = "Anonymous"
+	}
+	leaderboardStatus := "Off"
+	if m.preferences.ShowOnLeaderboard {
+		leaderboardStatus = "On"
+	}
+
 	settings := []struct {
 		label string
 		value string
@@ -804,6 +834,8 @@ func (m Model) renderSettings() string {
 		{"Show Keyboard", fmt.Sprintf("%v", m.preferences.ShowKeyboard)},
 		{"Word Count", fmt.Sprintf("%d", m.preferences.WordCount)},
 		{"Theme", m.preferences.Theme},
+		{"Show on Leaderboard", leaderboardStatus},
+		{"Display Name", displayName},
 	}
 
 	var items []string

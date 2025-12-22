@@ -18,12 +18,14 @@ type UserData struct {
 
 // UserPreferences represents user settings
 type UserPreferences struct {
-	KeyboardLayout string `json:"keyboard_layout"` // "qwerty", "dvorak", "colemak"
-	ShowKeyboard   bool   `json:"show_keyboard"`
-	WordMode       string `json:"word_mode"` // "phonetic", "real", "mixed"
-	Difficulty     int    `json:"difficulty"`
-	WordCount      int    `json:"word_count"`
-	Theme          string `json:"theme"` // "minimal", "dracula", "nord", etc.
+	KeyboardLayout    string `json:"keyboard_layout"`     // "qwerty", "dvorak", "colemak"
+	ShowKeyboard      bool   `json:"show_keyboard"`
+	WordMode          string `json:"word_mode"`           // "phonetic", "real", "mixed"
+	Difficulty        int    `json:"difficulty"`
+	WordCount         int    `json:"word_count"`
+	Theme             string `json:"theme"`               // "minimal", "dracula", "nord", etc.
+	ShowOnLeaderboard bool   `json:"show_on_leaderboard"` // Opt-in to public leaderboard
+	DisplayName       string `json:"display_name"`        // Public display name for leaderboard
 }
 
 // LocalStorage handles local file storage

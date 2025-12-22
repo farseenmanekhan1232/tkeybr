@@ -52,13 +52,15 @@ type firestoreKeyStat struct {
 
 // firestorePreferences is the Firestore representation of UserPreferences
 type firestorePreferences struct {
-	KeyboardLayout string    `firestore:"keyboardLayout"`
-	ShowKeyboard   bool      `firestore:"showKeyboard"`
-	WordMode       string    `firestore:"wordMode"`
-	Difficulty     int       `firestore:"difficulty"`
-	WordCount      int       `firestore:"wordCount"`
-	Theme          string    `firestore:"theme"`
-	UpdatedAt      time.Time `firestore:"updatedAt"`
+	KeyboardLayout    string    `firestore:"keyboardLayout"`
+	ShowKeyboard      bool      `firestore:"showKeyboard"`
+	WordMode          string    `firestore:"wordMode"`
+	Difficulty        int       `firestore:"difficulty"`
+	WordCount         int       `firestore:"wordCount"`
+	Theme             string    `firestore:"theme"`
+	ShowOnLeaderboard bool      `firestore:"showOnLeaderboard"`
+	DisplayName       string    `firestore:"displayName"`
+	UpdatedAt         time.Time `firestore:"updatedAt"`
 }
 
 // SaveStats saves typing statistics to Firestore
@@ -144,13 +146,15 @@ func (fs *FirestoreStorage) SavePreferences(prefs *UserPreferences) error {
 	}
 
 	fsPrefs := firestorePreferences{
-		KeyboardLayout: prefs.KeyboardLayout,
-		ShowKeyboard:   prefs.ShowKeyboard,
-		WordMode:       prefs.WordMode,
-		Difficulty:     prefs.Difficulty,
-		WordCount:      prefs.WordCount,
-		Theme:          prefs.Theme,
-		UpdatedAt:      time.Now(),
+		KeyboardLayout:    prefs.KeyboardLayout,
+		ShowKeyboard:      prefs.ShowKeyboard,
+		WordMode:          prefs.WordMode,
+		Difficulty:        prefs.Difficulty,
+		WordCount:         prefs.WordCount,
+		Theme:             prefs.Theme,
+		ShowOnLeaderboard: prefs.ShowOnLeaderboard,
+		DisplayName:       prefs.DisplayName,
+		UpdatedAt:         time.Now(),
 	}
 
 	_, err := fs.userDoc().Collection("data").Doc("preferences").Set(fs.ctx, fsPrefs)
@@ -174,12 +178,14 @@ func (fs *FirestoreStorage) LoadPreferences() (*UserPreferences, error) {
 	}
 
 	return &UserPreferences{
-		KeyboardLayout: fsPrefs.KeyboardLayout,
-		ShowKeyboard:   fsPrefs.ShowKeyboard,
-		WordMode:       fsPrefs.WordMode,
-		Difficulty:     fsPrefs.Difficulty,
-		WordCount:      fsPrefs.WordCount,
-		Theme:          fsPrefs.Theme,
+		KeyboardLayout:    fsPrefs.KeyboardLayout,
+		ShowKeyboard:      fsPrefs.ShowKeyboard,
+		WordMode:          fsPrefs.WordMode,
+		Difficulty:        fsPrefs.Difficulty,
+		WordCount:         fsPrefs.WordCount,
+		Theme:             fsPrefs.Theme,
+		ShowOnLeaderboard: fsPrefs.ShowOnLeaderboard,
+		DisplayName:       fsPrefs.DisplayName,
 	}, nil
 }
 
@@ -345,4 +351,55 @@ func (fs *FirestoreStorage) CreateUserProfile(email, name string) error {
 
 	_, err := fs.userDoc().Set(fs.ctx, profile, firestore.MergeAll)
 	return err
+}
+
+// LeaderboardEntry represents a public leaderboard entry
+type LeaderboardEntry struct {
+	DisplayName      string    `firestore:"displayName"`
+	BestWPM          float64   `firestore:"bestWPM"`
+	AverageWPM       float64   `firestore:"averageWPM"`
+	TotalTimeSeconds float64   `firestore:"totalTimeSeconds"`
+	TotalCharacters  int       `firestore:"totalCharacters"`
+	TotalSessions    int       `firestore:"totalSessions"`
+	LastUpdated      time.Time `firestore:"lastUpdated"`
+}
+
+// SyncToLeaderboard syncs user stats to the public leaderboard collection
+// If showOnLeaderboard is true, it updates/creates the entry
+// If showOnLeaderboard is false, it removes the entry
+func (fs *FirestoreStorage) SyncToLeaderboard(prefs *UserPreferences, stats *engine.Stats) error {
+	leaderboardDoc := fs.client.Collection("leaderboard").Doc(fs.userID)
+
+	if !prefs.ShowOnLeaderboard {
+		// Remove from leaderboard if opt-out
+		_, err := leaderboardDoc.Delete(fs.ctx)
+		if err != nil {
+			// Ignore "not found" errors when deleting
+			return nil
+		}
+		return nil
+	}
+
+	// User has opted in - sync their stats
+	displayName := prefs.DisplayName
+	if displayName == "" {
+		displayName = "Anonymous"
+	}
+
+	entry := LeaderboardEntry{
+		DisplayName:      displayName,
+		BestWPM:          stats.BestWPM,
+		AverageWPM:       stats.AverageWPM,
+		TotalTimeSeconds: stats.TotalTimeSeconds,
+		TotalCharacters:  stats.TotalCharacters,
+		TotalSessions:    stats.TotalSessions,
+		LastUpdated:      time.Now(),
+	}
+
+	_, err := leaderboardDoc.Set(fs.ctx, entry)
+	if err != nil {
+		return fmt.Errorf("failed to sync to leaderboard: %w", err)
+	}
+
+	return nil
 }
