@@ -20,7 +20,12 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X github.com/farseenmanekhan1232/tkeybr/internal/config.EmbeddedGoogleClientID={{ .Env.GOOGLE_CLIENT_ID }}
+      - -X github.com/farseenmanekhan1232/tkeybr/internal/config.EmbeddedFirebaseCredentials={{ .Env.FIREBASE_CREDENTIALS_BASE64 }}
+      - -X github.com/farseenmanekhan1232/tkeybr/internal/config.EmbeddedFirebaseProjectID={{ .Env.FIREBASE_PROJECT_ID }}
 
   - id: tkeybr-server
     main: ./cmd/server

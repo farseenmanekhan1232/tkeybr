@@ -52,6 +52,7 @@ type StoredAuth struct {
 	RefreshToken string    `json:"refresh_token"`
 	ExpiresAt    time.Time `json:"expires_at"`
 	User         UserInfo  `json:"user"`
+	FirebaseUID  string    `json:"firebase_uid,omitempty"`
 }
 
 // GoogleAuth handles Google OAuth device flow authentication
@@ -274,6 +275,23 @@ func (g *GoogleAuth) CompleteAuth(tokenResp *TokenResponse) error {
 // Placeholder for when no client ID is configured
 func (g *GoogleAuth) IsConfigured() bool {
 	return g.clientID != "" && g.clientID != "YOUR_GOOGLE_CLIENT_ID"
+}
+
+// GetFirebaseUID returns the Firebase UID if available
+func (g *GoogleAuth) GetFirebaseUID() string {
+	if g.currentAuth == nil {
+		return ""
+	}
+	return g.currentAuth.FirebaseUID
+}
+
+// SetFirebaseUID sets the Firebase UID and saves auth
+func (g *GoogleAuth) SetFirebaseUID(uid string) error {
+	if g.currentAuth == nil {
+		return fmt.Errorf("no current auth to update")
+	}
+	g.currentAuth.FirebaseUID = uid
+	return g.SaveAuth(g.currentAuth)
 }
 
 // Helper to read response body

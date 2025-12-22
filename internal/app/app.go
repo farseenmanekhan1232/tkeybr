@@ -1,7 +1,10 @@
 package app
 
 import (
+	"context"
 	"fmt"
+	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -9,7 +12,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/farseenmanekhan1232/tkeybr/internal/auth"
+	"github.com/farseenmanekhan1232/tkeybr/internal/config"
 	"github.com/farseenmanekhan1232/tkeybr/internal/engine"
+	"github.com/farseenmanekhan1232/tkeybr/internal/firebase"
 	"github.com/farseenmanekhan1232/tkeybr/internal/storage"
 	"github.com/farseenmanekhan1232/tkeybr/internal/ui/components"
 	"github.com/farseenmanekhan1232/tkeybr/internal/ui/styles"
@@ -54,8 +59,13 @@ type Model struct {
 	authError      string
 
 	// Storage
-	storage     *storage.LocalStorage
-	preferences *storage.UserPreferences
+	localStorage *storage.LocalStorage
+	syncStorage  *storage.SyncedStorage // nil if not signed in
+	preferences  *storage.UserPreferences
+
+	// Firebase
+	firebaseApp *firebase.App // nil if not configured
+	config      *config.Config
 
 	// Menu state
 	menuSelection int
@@ -70,10 +80,13 @@ type Model struct {
 
 // New creates a new application model
 func New() Model {
-	// Initialize storage and load data
-	store := storage.NewLocalStorage()
-	savedStats, _ := store.LoadStats()
-	prefs, _ := store.LoadPreferences()
+	// Load configuration
+	cfg, _ := config.Load()
+
+	// Initialize local storage and load data
+	localStore := storage.NewLocalStorage()
+	savedStats, _ := localStore.LoadStats()
+	prefs, _ := localStore.LoadPreferences()
 
 	if savedStats == nil {
 		savedStats = engine.NewStats()
@@ -89,20 +102,60 @@ func New() Model {
 
 	// Initialize progress tracker with layout
 	progressTracker := engine.NewProgressTracker(prefs.KeyboardLayout)
-	
+
 	// Initialize adaptive word generator
 	wordGen := engine.NewAdaptiveWordGenerator(progressTracker)
 
-	// Initialize auth (placeholder client ID - user needs to configure)
-	googleAuth := auth.NewGoogleAuth("YOUR_GOOGLE_CLIENT_ID")
-	
+	// Initialize auth with config client ID
+	clientID := "YOUR_GOOGLE_CLIENT_ID"
+	if cfg.HasGoogleClientID() {
+		clientID = cfg.GoogleClientID
+	}
+	googleAuth := auth.NewGoogleAuth(clientID)
+
 	// Try to load existing auth
 	googleAuth.LoadAuth()
+
+	// Initialize Firebase if credentials available
+	var firebaseApp *firebase.App
+	var syncStore *storage.SyncedStorage
+
+	if cfg.HasFirebaseCredentials() {
+		ctx := context.Background()
+		// Get credentials (embedded or from file)
+		credentialsJSON, err := cfg.GetFirebaseCredentialsJSON()
+		if err == nil {
+			app, err := firebase.NewAppWithJSON(ctx, credentialsJSON)
+			if err == nil {
+				firebaseApp = app
+
+				// If user is signed in, set up synced storage
+				if uid := googleAuth.GetFirebaseUID(); uid != "" {
+					cloudStore := storage.NewFirestoreStorage(app.Firestore(), uid)
+					syncStore = storage.NewSyncedStorage(localStore, cloudStore, uid)
+
+					// Load from cloud if available
+					if syncedStats, err := syncStore.LoadStats(); err == nil {
+						savedStats = syncedStats
+					}
+					if syncedPrefs, err := syncStore.LoadPreferences(); err == nil {
+						prefs = syncedPrefs
+					}
+				}
+			}
+		}
+	}
 
 	// Initialize components
 	header := components.NewHeader()
 	if user := googleAuth.GetCurrentUser(); user != nil {
 		header.SetUser(user.Name, user.Email)
+	}
+
+	// Update menu based on sign-in state
+	menuItems := []string{"Start Practice", "View Statistics", "Help", "Settings", "Sign In with Google", "Quit"}
+	if googleAuth.GetCurrentUser() != nil {
+		menuItems[4] = "Sign Out"
 	}
 
 	return Model{
@@ -116,10 +169,13 @@ func New() Model {
 		typingArea:      components.NewTypingArea(70),
 		statsPanel:      components.NewStatsPanel(false),
 		auth:            googleAuth,
-		storage:         store,
+		localStorage:    localStore,
+		syncStorage:     syncStore,
 		preferences:     prefs,
+		firebaseApp:     firebaseApp,
+		config:          cfg,
 		menuSelection:   0,
-		menuItems:       []string{"Start Practice", "View Statistics", "Help", "Settings", "Sign In with Google", "Quit"},
+		menuItems:       menuItems,
 	}
 }
 
@@ -167,8 +223,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else if msg.user != nil {
 			m.header.SetUser(msg.user.Name, msg.user.Email)
 			m.currentView = ViewMenu
-			// Update menu items
-			m.menuItems[3] = "Sign Out"
+			m.menuItems[4] = "Sign Out"
+
+			// Set up Firebase UID and synced storage
+			if m.firebaseApp != nil {
+				ctx := context.Background()
+				// Get or create Firebase user
+				firebaseUser, err := m.firebaseApp.GetOrCreateUser(ctx, msg.user.Email, msg.user.Name, msg.user.Picture)
+				if err == nil {
+					m.auth.SetFirebaseUID(firebaseUser.UID)
+
+					// Set up synced storage
+					cloudStore := storage.NewFirestoreStorage(m.firebaseApp.Firestore(), firebaseUser.UID)
+					m.syncStorage = storage.NewSyncedStorage(m.localStorage, cloudStore, firebaseUser.UID)
+
+					// Create user profile in Firestore
+					cloudStore.CreateUserProfile(msg.user.Email, msg.user.Name)
+
+					// Sync data from cloud
+					m.syncStorage.Sync()
+				}
+			}
 		}
 		return m, nil
 	}
@@ -189,6 +264,9 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.tickerActive = false
 			return m, nil
 		}
+	case msg.String() == "s" && m.currentView != ViewPractice:
+		// Open sponsor page (not during practice to avoid interfering with typing)
+		return m, openURL("https://github.com/sponsors/farseenmanekhan1232")
 	}
 
 	switch m.currentView {
@@ -235,6 +313,7 @@ func (m Model) handleMenuInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 				m.auth.Logout()
 				m.header.SetGuest()
 				m.menuItems[4] = "Sign In with Google"
+				m.syncStorage = nil // Clear synced storage, fall back to local
 			} else {
 				m.currentView = ViewAuth
 				return m, m.startAuthFlow()
@@ -383,7 +462,11 @@ func (m *Model) adjustSetting(delta int) {
 	}
 
 	// Auto-save preferences
-	m.storage.SavePreferences(m.preferences)
+	if m.syncStorage != nil {
+		m.syncStorage.SavePreferences(m.preferences)
+	} else {
+		m.localStorage.SavePreferences(m.preferences)
+	}
 }
 
 func (m *Model) startNewSession() {
@@ -406,8 +489,13 @@ func (m *Model) startNewSession() {
 }
 
 func (m *Model) saveProgress() {
-	m.storage.SaveStats(m.stats)
-	m.storage.SavePreferences(m.preferences)
+	if m.syncStorage != nil {
+		m.syncStorage.SaveStats(m.stats)
+		m.syncStorage.SavePreferences(m.preferences)
+	} else {
+		m.localStorage.SaveStats(m.stats)
+		m.localStorage.SavePreferences(m.preferences)
+	}
 }
 
 func (m *Model) startAuthFlow() tea.Cmd {
@@ -493,18 +581,17 @@ func (m Model) View() string {
 	// Build full layout with responsive sizing
 	header := m.header.Render(m.width)
 	help := m.renderHelp()
-	
-	// Ad slot at bottom
-	adSlot := styles.AdSlotStyle.Width(m.width - 4).Render(
-		"[ Ad Space - Support tkeybr ]",
-	)
+
+	// Sponsor banner at bottom
+	sponsorText := "💖 Support tkeybr - Press 's' to sponsor"
+	sponsorBanner := styles.AdSlotStyle.Width(m.width - 4).Render(sponsorText)
 
 	// Calculate available height for content
 	headerHeight := 1
 	helpHeight := 1
-	adHeight := 1
+	sponsorHeight := 1
 	padding := 4
-	contentHeight := m.height - headerHeight - helpHeight - adHeight - padding
+	contentHeight := m.height - headerHeight - helpHeight - sponsorHeight - padding
 	if contentHeight < 10 {
 		contentHeight = 10
 	}
@@ -524,7 +611,7 @@ func (m Model) View() string {
 		header,
 		mainContent,
 		styles.HelpStyle.Width(m.width).Align(lipgloss.Center).Render(help),
-		adSlot,
+		sponsorBanner,
 	)
 }
 
@@ -749,11 +836,11 @@ func (m Model) renderHelp() string {
 
 	switch m.currentView {
 	case ViewMenu:
-		help = "↑/↓ Navigate • Enter Select • q Quit"
+		help = "↑/↓ Navigate • Enter Select • s Sponsor • q Quit"
 	case ViewPractice:
-		help = "Type to practice • Esc Menu"
+		help = "Type to practice • s Sponsor • Esc Menu"
 	default:
-		help = "Esc Back • q Quit"
+		help = "Esc Back • s Sponsor • q Quit"
 	}
 
 	return styles.HelpStyle.Render(help)
@@ -786,4 +873,27 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// openURL opens a URL in the default browser
+func openURL(url string) tea.Cmd {
+	return func() tea.Msg {
+		var cmd string
+		var args []string
+
+		switch runtime.GOOS {
+		case "darwin":
+			cmd = "open"
+			args = []string{url}
+		case "windows":
+			cmd = "cmd"
+			args = []string{"/c", "start", url}
+		default: // linux, etc.
+			cmd = "xdg-open"
+			args = []string{url}
+		}
+
+		exec.Command(cmd, args...).Start()
+		return nil
+	}
 }
