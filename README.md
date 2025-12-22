@@ -31,14 +31,42 @@ A terminal-based keyboard practice application inspired by [keybr.com](https://k
 
 ## Installation
 
-### Homebrew (macOS/Linux)
+### Quick Install
+
+**macOS/Linux (bash/zsh):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/farseenmanekhan1232/tkeybr/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+iwr -useb https://raw.githubusercontent.com/farseenmanekhan1232/tkeybr/main/install.ps1 | iex
+```
+
+**Windows (CMD):**
+```cmd
+curl -fsSL https://raw.githubusercontent.com/farseenmanekhan1232/tkeybr/main/install.bat -o install.bat && install.bat
+```
+
+These scripts auto-detect your architecture, download the correct binary, and add it to your PATH.
+
+---
+
+### Other Methods
+
+<details>
+<summary>Homebrew (macOS/Linux)</summary>
+
 ```bash
 brew tap farseenmanekhan1232/tap
 brew install tkeybr
 ```
+</details>
 
-### Linux Packages
-Download `.deb`, `.rpm`, or `.apk` from [Releases](https://github.com/farseenmanekhan1232/tkeybr/releases).
+<details>
+<summary>Linux Packages (.deb, .rpm, .apk)</summary>
+
+Download from [Releases](https://github.com/farseenmanekhan1232/tkeybr/releases):
 
 ```bash
 # Debian/Ubuntu
@@ -50,22 +78,21 @@ sudo rpm -i tkeybr_*.rpm
 # Alpine
 sudo apk add --allow-untrusted tkeybr_*.apk
 ```
+</details>
 
-### Windows
-Download the `.zip` from [Releases](https://github.com/farseenmanekhan1232/tkeybr/releases) and extract.
+<details>
+<summary>Go Install (requires Go 1.21+)</summary>
 
-### Go Install
 ```bash
 go install github.com/farseenmanekhan1232/tkeybr/cmd/tkeybr@latest
 ```
+</details>
 
-### From Source
-```bash
-git clone https://github.com/farseenmanekhan1232/tkeybr.git
-cd tkeybr
-go build -o tkeybr ./cmd/tkeybr
-./tkeybr
-```
+<details>
+<summary>Manual Download</summary>
+
+Download the binary for your platform from [Releases](https://github.com/farseenmanekhan1232/tkeybr/releases) and add it to your PATH.
+</details>
 
 ## Usage
 
