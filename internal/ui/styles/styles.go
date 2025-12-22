@@ -245,6 +245,13 @@ func updateStyles() {
 	UserInfoStyle = lipgloss.NewStyle().
 		Foreground(t.TextSecondary).
 		Italic(true)
+
+	AttentionStyle = lipgloss.NewStyle().
+		Foreground(t.BgDark).
+		Background(t.Accent).
+		Bold(true).
+		Padding(0, 1).
+		Align(lipgloss.Center)
 }
 
 // Expose colors from current theme
@@ -283,6 +290,7 @@ var (
 	MenuItemStyle         lipgloss.Style
 	MenuItemSelectedStyle lipgloss.Style
 	UserInfoStyle         lipgloss.Style
+	AttentionStyle        lipgloss.Style
 )
 
 func init() {

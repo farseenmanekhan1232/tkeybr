@@ -18,6 +18,7 @@ import (
 	"github.com/farseenmanekhan1232/tkeybr/internal/storage"
 	"github.com/farseenmanekhan1232/tkeybr/internal/ui/components"
 	"github.com/farseenmanekhan1232/tkeybr/internal/ui/styles"
+	"github.com/farseenmanekhan1232/tkeybr/internal/updater"
 )
 
 // View represents different app views
@@ -76,10 +77,14 @@ type Model struct {
 
 	// Ticker for WPM updates
 	tickerActive bool
+
+	// Updates
+	version         string
+	updateAvailable *updater.ReleaseInfo
 }
 
 // New creates a new application model
-func New() Model {
+func New(version string) Model {
 	// Load configuration
 	cfg, _ := config.Load()
 
@@ -181,6 +186,7 @@ func New() Model {
 		config:          cfg,
 		menuSelection:   0,
 		menuItems:       menuItems,
+		version:         version,
 	}
 }
 
@@ -195,17 +201,32 @@ type authCompleteMsg struct {
 	user *auth.UserInfo
 	err  error
 }
+type updateCheckMsg *updater.ReleaseInfo
+
+// checkUpdateCmd creates a command to check for updates
+func (m *Model) checkUpdateCmd() tea.Cmd {
+	return func() tea.Msg {
+		info, _ := updater.CheckForUpdate(m.version)
+		// Ignore errors, we just won't show an update
+		return updateCheckMsg(info)
+	}
+}
 
 // Init initializes the application
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
 		tea.EnterAltScreen,
+		m.checkUpdateCmd(),
 	)
 }
 
 // Update handles messages and input
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case updateCheckMsg:
+		m.updateAvailable = msg
+		return m, nil
+
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -600,6 +621,13 @@ func (m Model) View() string {
 	header := m.header.Render(m.width)
 	help := m.renderHelp()
 
+	// Update banner
+	var updateBanner string
+	if m.updateAvailable != nil {
+		text := fmt.Sprintf("🌟 New version %s available! Run 'brew upgrade tkeybr' to update.", m.updateAvailable.TagName)
+		updateBanner = styles.AttentionStyle.Width(m.width).Render(text)
+	}
+
 	// Sponsor banner at bottom
 	sponsorText := "💖 Support tkeybr - Press 's' to sponsor"
 	sponsorBanner := styles.AdSlotStyle.Width(m.width - 4).Render(sponsorText)
@@ -608,8 +636,12 @@ func (m Model) View() string {
 	headerHeight := 1
 	helpHeight := 1
 	sponsorHeight := 1
+	updateHeight := 0
+	if updateBanner != "" {
+		updateHeight = 1
+	}
 	padding := 4
-	contentHeight := m.height - headerHeight - helpHeight - sponsorHeight - padding
+	contentHeight := m.height - headerHeight - helpHeight - sponsorHeight - updateHeight - padding
 	if contentHeight < 10 {
 		contentHeight = 10
 	}
@@ -627,6 +659,7 @@ func (m Model) View() string {
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
+		updateBanner,
 		mainContent,
 		styles.HelpStyle.Width(m.width).Align(lipgloss.Center).Render(help),
 		sponsorBanner,

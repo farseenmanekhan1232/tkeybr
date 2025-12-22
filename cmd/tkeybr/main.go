@@ -22,7 +22,7 @@ func main() {
 	}
 
 	p := tea.NewProgram(
-		app.New(),
+		app.New(version),
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),
 	)
