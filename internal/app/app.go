@@ -624,7 +624,8 @@ func (m Model) View() string {
 	// Update banner
 	var updateBanner string
 	if m.updateAvailable != nil {
-		text := fmt.Sprintf("🌟 New version %s available! Run 'brew upgrade tkeybr' to update.", m.updateAvailable.TagName)
+		url := "https://github.com/farseenmanekhan1232/tkeybr/releases"
+		text := fmt.Sprintf("🌟 New version %s available! Download at %s", m.updateAvailable.TagName, url)
 		updateBanner = styles.AttentionStyle.Width(m.width).Render(text)
 	}
 
