@@ -8,7 +8,19 @@ import (
 	"github.com/farseenmanekhan1232/tkeybr/internal/app"
 )
 
+// Build-time variables (set via ldflags)
+var (
+	version = "dev"
+	commit  = "unknown"
+)
+
 func main() {
+	// Handle --version flag
+	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
+		fmt.Printf("tkeybr %s (%s)\n", version, commit)
+		return
+	}
+
 	p := tea.NewProgram(
 		app.New(),
 		tea.WithAltScreen(),
@@ -20,3 +32,4 @@ func main() {
 		os.Exit(1)
 	}
 }
+
