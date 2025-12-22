@@ -106,12 +106,14 @@ func New() Model {
 	// Initialize adaptive word generator
 	wordGen := engine.NewAdaptiveWordGenerator(progressTracker)
 
-	// Initialize auth with config client ID
+	// Initialize auth with config client ID and secret
 	clientID := "YOUR_GOOGLE_CLIENT_ID"
+	clientSecret := ""
 	if cfg.HasGoogleClientID() {
 		clientID = cfg.GoogleClientID
+		clientSecret = cfg.GoogleClientSecret
 	}
-	googleAuth := auth.NewGoogleAuth(clientID)
+	googleAuth := auth.NewGoogleAuth(clientID, clientSecret)
 
 	// Try to load existing auth
 	googleAuth.LoadAuth()
@@ -182,6 +184,10 @@ func New() Model {
 // Messages
 type tickMsg time.Time
 type authPollMsg struct{}
+type deviceCodeMsg struct {
+	resp *auth.DeviceCodeResponse
+	err  error
+}
 type authCompleteMsg struct {
 	user *auth.UserInfo
 	err  error
@@ -212,6 +218,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tickCmd()
 		}
 		return m, nil
+
+	case deviceCodeMsg:
+		if msg.err != nil {
+			m.authError = msg.err.Error()
+			return m, nil
+		}
+		m.deviceCodeResp = msg.resp
+		m.authPolling = true
+		return m, func() tea.Msg { return authPollMsg{} }
 
 	case authPollMsg:
 		return m.handleAuthPoll()
@@ -501,17 +516,15 @@ func (m *Model) saveProgress() {
 func (m *Model) startAuthFlow() tea.Cmd {
 	return func() tea.Msg {
 		if !m.auth.IsConfigured() {
-			return authCompleteMsg{err: fmt.Errorf("Google OAuth not configured. Please set your client ID.")}
+			return deviceCodeMsg{err: fmt.Errorf("Google OAuth not configured. Please set your client ID.")}
 		}
 
 		resp, err := m.auth.RequestDeviceCode()
 		if err != nil {
-			return authCompleteMsg{err: err}
+			return deviceCodeMsg{err: err}
 		}
 
-		m.deviceCodeResp = resp
-		m.authPolling = true
-		return authPollMsg{}
+		return deviceCodeMsg{resp: resp}
 	}
 }
 

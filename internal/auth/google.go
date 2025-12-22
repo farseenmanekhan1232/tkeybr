@@ -58,20 +58,22 @@ type StoredAuth struct {
 // GoogleAuth handles Google OAuth device flow authentication
 type GoogleAuth struct {
 	clientID     string
+	clientSecret string
 	storagePath  string
 	currentAuth  *StoredAuth
 	httpClient   *http.Client
 }
 
 // NewGoogleAuth creates a new Google auth handler
-func NewGoogleAuth(clientID string) *GoogleAuth {
+func NewGoogleAuth(clientID, clientSecret string) *GoogleAuth {
 	homeDir, _ := os.UserHomeDir()
 	storagePath := filepath.Join(homeDir, ".tkeybr", "auth.json")
 
 	return &GoogleAuth{
-		clientID:    clientID,
-		storagePath: storagePath,
-		httpClient:  &http.Client{Timeout: 30 * time.Second},
+		clientID:     clientID,
+		clientSecret: clientSecret,
+		storagePath:  storagePath,
+		httpClient:   &http.Client{Timeout: 30 * time.Second},
 	}
 }
 
@@ -104,6 +106,7 @@ func (g *GoogleAuth) RequestDeviceCode() (*DeviceCodeResponse, error) {
 func (g *GoogleAuth) PollForToken(deviceCode string, interval int) (*TokenResponse, error) {
 	data := url.Values{}
 	data.Set("client_id", g.clientID)
+	data.Set("client_secret", g.clientSecret)
 	data.Set("device_code", deviceCode)
 	data.Set("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
 

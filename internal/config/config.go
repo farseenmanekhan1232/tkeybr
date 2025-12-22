@@ -13,6 +13,9 @@ var (
 	// EmbeddedGoogleClientID is the Google OAuth Client ID (set at build time)
 	EmbeddedGoogleClientID string
 
+	// EmbeddedGoogleClientSecret is the Google OAuth Client Secret (set at build time)
+	EmbeddedGoogleClientSecret string
+
 	// EmbeddedFirebaseCredentials is base64-encoded Firebase service account JSON (set at build time)
 	EmbeddedFirebaseCredentials string
 
@@ -27,7 +30,8 @@ type Config struct {
 	FirebaseProjectID       string `json:"firebase_project_id"`
 
 	// Google OAuth (for device code flow)
-	GoogleClientID string `json:"google_client_id"`
+	GoogleClientID     string `json:"google_client_id"`
+	GoogleClientSecret string `json:"google_client_secret"`
 
 	// Decoded Firebase credentials (from embedded or file)
 	firebaseCredentialsJSON []byte
@@ -52,6 +56,9 @@ func Load() (*Config, error) {
 	// Priority 1: Embedded credentials (from build)
 	if EmbeddedGoogleClientID != "" {
 		cfg.GoogleClientID = EmbeddedGoogleClientID
+	}
+	if EmbeddedGoogleClientSecret != "" {
+		cfg.GoogleClientSecret = EmbeddedGoogleClientSecret
 	}
 	if EmbeddedFirebaseProjectID != "" {
 		cfg.FirebaseProjectID = EmbeddedFirebaseProjectID
@@ -80,6 +87,9 @@ func Load() (*Config, error) {
 	}
 	if envClientID := os.Getenv("TKEYBR_GOOGLE_CLIENT_ID"); envClientID != "" {
 		cfg.GoogleClientID = envClientID
+	}
+	if envClientSecret := os.Getenv("TKEYBR_GOOGLE_CLIENT_SECRET"); envClientSecret != "" {
+		cfg.GoogleClientSecret = envClientSecret
 	}
 
 	// Default Firebase credentials path if not set and no embedded credentials

@@ -24,6 +24,7 @@ builds:
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
       - -X github.com/farseenmanekhan1232/tkeybr/internal/config.EmbeddedGoogleClientID={{ .Env.GOOGLE_CLIENT_ID }}
+      - -X github.com/farseenmanekhan1232/tkeybr/internal/config.EmbeddedGoogleClientSecret={{ .Env.GOOGLE_CLIENT_SECRET }}
       - -X github.com/farseenmanekhan1232/tkeybr/internal/config.EmbeddedFirebaseCredentials={{ .Env.FIREBASE_CREDENTIALS_BASE64 }}
       - -X github.com/farseenmanekhan1232/tkeybr/internal/config.EmbeddedFirebaseProjectID={{ .Env.FIREBASE_PROJECT_ID }}
 
