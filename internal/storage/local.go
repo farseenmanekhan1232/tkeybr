@@ -11,8 +11,9 @@ import (
 
 // UserData represents all stored user data
 type UserData struct {
-	Stats       *engine.Stats    `json:"stats"`
-	Preferences *UserPreferences `json:"preferences"`
+	Stats       *engine.Stats           `json:"stats"`
+	Preferences *UserPreferences        `json:"preferences"`
+	Progress    *engine.ProgressTracker `json:"progress"`
 }
 
 // UserPreferences represents user settings
@@ -127,6 +128,48 @@ func (ls *LocalStorage) LoadPreferences() (*UserPreferences, error) {
 	return &prefs, nil
 }
 
+// SaveProgress saves progress tracker data
+func (ls *LocalStorage) SaveProgress(progress *engine.ProgressTracker) error {
+	if err := ls.ensureDir(); err != nil {
+		return err
+	}
+
+	path := filepath.Join(ls.basePath, "progress.json")
+	data, err := json.MarshalIndent(progress, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal progress: %w", err)
+	}
+
+	return os.WriteFile(path, data, 0600)
+}
+
+// LoadProgress loads progress tracker data
+func (ls *LocalStorage) LoadProgress(layoutName string) (*engine.ProgressTracker, error) {
+	path := filepath.Join(ls.basePath, "progress.json")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return engine.NewProgressTracker(layoutName), nil
+		}
+		return nil, fmt.Errorf("failed to read progress: %w", err)
+	}
+
+	var progress engine.ProgressTracker
+	if err := json.Unmarshal(data, &progress); err != nil {
+		return nil, fmt.Errorf("failed to parse progress: %w", err)
+	}
+
+	// Restore the layout reference (not serialized)
+	progress.SetLayout(progress.LayoutName)
+
+	// Ensure Letters map is initialized
+	if progress.Letters == nil {
+		progress.Letters = make(map[rune]*engine.LetterProgress)
+	}
+
+	return &progress, nil
+}
+
 // SaveAll saves all user data
 func (ls *LocalStorage) SaveAll(data *UserData) error {
 	if data.Stats != nil {
@@ -136,6 +179,11 @@ func (ls *LocalStorage) SaveAll(data *UserData) error {
 	}
 	if data.Preferences != nil {
 		if err := ls.SavePreferences(data.Preferences); err != nil {
+			return err
+		}
+	}
+	if data.Progress != nil {
+		if err := ls.SaveProgress(data.Progress); err != nil {
 			return err
 		}
 	}
@@ -154,8 +202,14 @@ func (ls *LocalStorage) LoadAll() (*UserData, error) {
 		return nil, err
 	}
 
+	progress, err := ls.LoadProgress(prefs.KeyboardLayout)
+	if err != nil {
+		return nil, err
+	}
+
 	return &UserData{
 		Stats:       stats,
 		Preferences: prefs,
+		Progress:    progress,
 	}, nil
 }

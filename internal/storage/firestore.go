@@ -183,6 +183,113 @@ func (fs *FirestoreStorage) LoadPreferences() (*UserPreferences, error) {
 	}, nil
 }
 
+// firestoreProgress is the Firestore representation of ProgressTracker
+type firestoreProgress struct {
+	LayoutName       string                          `firestore:"layoutName"`
+	UnlockedCount    int                             `firestore:"unlockedCount"`
+	FocusLetter      string                          `firestore:"focusLetter"`
+	ConfidenceThresh float64                         `firestore:"confidenceThreshold"`
+	MinSamples       int                             `firestore:"minSamples"`
+	Letters          map[string]firestoreLetterProgress `firestore:"letters"`
+	UpdatedAt        time.Time                       `firestore:"updatedAt"`
+}
+
+// firestoreLetterProgress is Firestore representation of LetterProgress
+type firestoreLetterProgress struct {
+	Unlocked    bool      `firestore:"unlocked"`
+	TotalTyped  int       `firestore:"totalTyped"`
+	ErrorCount  int       `firestore:"errorCount"`
+	TotalTimeMs int64     `firestore:"totalTimeMs"`
+	LastTyped   time.Time `firestore:"lastTyped"`
+	Confidence  float64   `firestore:"confidence"`
+}
+
+// SaveProgress saves progress tracker to Firestore
+func (fs *FirestoreStorage) SaveProgress(progress *engine.ProgressTracker) error {
+	if progress == nil {
+		return nil
+	}
+
+	// Convert Letters map (rune keys to string keys)
+	letters := make(map[string]firestoreLetterProgress)
+	for k, v := range progress.Letters {
+		letters[string(k)] = firestoreLetterProgress{
+			Unlocked:    v.Unlocked,
+			TotalTyped:  v.TotalTyped,
+			ErrorCount:  v.ErrorCount,
+			TotalTimeMs: v.TotalTimeMs,
+			LastTyped:   v.LastTyped,
+			Confidence:  v.Confidence,
+		}
+	}
+
+	fsProgress := firestoreProgress{
+		LayoutName:       progress.LayoutName,
+		UnlockedCount:    progress.UnlockedCount,
+		FocusLetter:      string(progress.FocusLetter),
+		ConfidenceThresh: progress.ConfidenceThresh,
+		MinSamples:       progress.MinSamples,
+		Letters:          letters,
+		UpdatedAt:        time.Now(),
+	}
+
+	_, err := fs.userDoc().Collection("data").Doc("progress").Set(fs.ctx, fsProgress)
+	if err != nil {
+		return fmt.Errorf("failed to save progress to Firestore: %w", err)
+	}
+
+	return nil
+}
+
+// LoadProgress loads progress tracker from Firestore
+func (fs *FirestoreStorage) LoadProgress(layoutName string) (*engine.ProgressTracker, error) {
+	doc, err := fs.userDoc().Collection("data").Doc("progress").Get(fs.ctx)
+	if err != nil {
+		// Document doesn't exist, return new progress
+		return engine.NewProgressTracker(layoutName), nil
+	}
+
+	var fsProgress firestoreProgress
+	if err := doc.DataTo(&fsProgress); err != nil {
+		return nil, fmt.Errorf("failed to parse progress from Firestore: %w", err)
+	}
+
+	// Convert back to engine.ProgressTracker
+	progress := &engine.ProgressTracker{
+		LayoutName:       fsProgress.LayoutName,
+		UnlockedCount:    fsProgress.UnlockedCount,
+		ConfidenceThresh: fsProgress.ConfidenceThresh,
+		MinSamples:       fsProgress.MinSamples,
+		Letters:          make(map[rune]*engine.LetterProgress),
+	}
+
+	// Convert focus letter
+	if len(fsProgress.FocusLetter) > 0 {
+		progress.FocusLetter = rune(fsProgress.FocusLetter[0])
+	}
+
+	// Convert string keys back to rune keys
+	for k, v := range fsProgress.Letters {
+		if len(k) > 0 {
+			runes := []rune(k)
+			progress.Letters[runes[0]] = &engine.LetterProgress{
+				Letter:      runes[0],
+				Unlocked:    v.Unlocked,
+				TotalTyped:  v.TotalTyped,
+				ErrorCount:  v.ErrorCount,
+				TotalTimeMs: v.TotalTimeMs,
+				LastTyped:   v.LastTyped,
+				Confidence:  v.Confidence,
+			}
+		}
+	}
+
+	// Restore layout reference
+	progress.SetLayout(progress.LayoutName)
+
+	return progress, nil
+}
+
 // SaveAll saves all user data to Firestore
 func (fs *FirestoreStorage) SaveAll(data *UserData) error {
 	if data.Stats != nil {
@@ -192,6 +299,11 @@ func (fs *FirestoreStorage) SaveAll(data *UserData) error {
 	}
 	if data.Preferences != nil {
 		if err := fs.SavePreferences(data.Preferences); err != nil {
+			return err
+		}
+	}
+	if data.Progress != nil {
+		if err := fs.SaveProgress(data.Progress); err != nil {
 			return err
 		}
 	}
@@ -210,9 +322,15 @@ func (fs *FirestoreStorage) LoadAll() (*UserData, error) {
 		return nil, err
 	}
 
+	progress, err := fs.LoadProgress(prefs.KeyboardLayout)
+	if err != nil {
+		return nil, err
+	}
+
 	return &UserData{
 		Stats:       stats,
 		Preferences: prefs,
+		Progress:    progress,
 	}, nil
 }
 

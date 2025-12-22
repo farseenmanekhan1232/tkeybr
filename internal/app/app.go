@@ -100,8 +100,11 @@ func New() Model {
 		styles.SetTheme(prefs.Theme)
 	}
 
-	// Initialize progress tracker with layout
-	progressTracker := engine.NewProgressTracker(prefs.KeyboardLayout)
+	// Initialize progress tracker - load from storage or create new
+	progressTracker, _ := localStore.LoadProgress(prefs.KeyboardLayout)
+	if progressTracker == nil {
+		progressTracker = engine.NewProgressTracker(prefs.KeyboardLayout)
+	}
 
 	// Initialize adaptive word generator
 	wordGen := engine.NewAdaptiveWordGenerator(progressTracker)
@@ -507,9 +510,11 @@ func (m *Model) saveProgress() {
 	if m.syncStorage != nil {
 		m.syncStorage.SaveStats(m.stats)
 		m.syncStorage.SavePreferences(m.preferences)
+		m.syncStorage.SaveProgress(m.progressTracker)
 	} else {
 		m.localStorage.SaveStats(m.stats)
 		m.localStorage.SavePreferences(m.preferences)
+		m.localStorage.SaveProgress(m.progressTracker)
 	}
 }
 

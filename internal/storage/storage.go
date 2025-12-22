@@ -92,6 +92,32 @@ func (s *SyncedStorage) LoadPreferences() (*UserPreferences, error) {
 	return s.local.LoadPreferences()
 }
 
+// SaveProgress saves progress to both local and cloud storage
+func (s *SyncedStorage) SaveProgress(progress *engine.ProgressTracker) error {
+	if err := s.local.SaveProgress(progress); err != nil {
+		return err
+	}
+
+	if s.cloud != nil {
+		go s.cloud.SaveProgress(progress)
+	}
+
+	return nil
+}
+
+// LoadProgress loads progress, preferring cloud if available
+func (s *SyncedStorage) LoadProgress(layoutName string) (*engine.ProgressTracker, error) {
+	if s.cloud != nil {
+		cloudProgress, err := s.cloud.LoadProgress(layoutName)
+		if err == nil && cloudProgress != nil {
+			s.local.SaveProgress(cloudProgress)
+			return cloudProgress, nil
+		}
+	}
+
+	return s.local.LoadProgress(layoutName)
+}
+
 // SaveAll saves all user data
 func (s *SyncedStorage) SaveAll(data *UserData) error {
 	if err := s.local.SaveAll(data); err != nil {
