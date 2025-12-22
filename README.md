@@ -5,6 +5,9 @@
 
 A terminal-based keyboard practice application inspired by [keybr.com](https://keybr.com). Learn touch typing with adaptive learning that focuses on your weak keys.
 
+![ezgif-722c2fcee41a1121](https://github.com/user-attachments/assets/60eff1f3-71ad-4057-a60a-2283098473e9)
+
+
 ## Features
 
 ### Adaptive Learning (keybr-style)
