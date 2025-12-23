@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tkeybr Leaderboard - Top Typists</title>
+    <meta name="description" content="See the top typists on tkeybr - the adaptive typing practice tool">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #161616;
+            --bg-tertiary: #1a1a1a;
+            --border-color: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --accent: #10b981;
+            --accent-secondary: #3b82f6;
+            --gold: #fbbf24;
+            --silver: #9ca3af;
+            --bronze: #cd7f32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .last-updated {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .sub-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sub-tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .sub-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .sub-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+        }
+
+        .leaderboard-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .leaderboard-table tr {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .leaderboard-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .rank {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            width: 60px;
+        }
+
+        .rank-1 { color: var(--gold); }
+        .rank-2 { color: var(--silver); }
+        .rank-3 { color: var(--bronze); }
+
+        .medal {
+            display: inline-block;
+            width: 24px;
+            text-align: center;
+        }
+
+        .display-name {
+            font-weight: 500;
+        }
+
+        .wpm {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .stat {
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .leaderboard-table th,
+            .leaderboard-table td {
+                padding: 0.75rem;
+            }
+
+            .hide-mobile {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">⌨️ tkeybr</div>
+            <p class="tagline">Leaderboard - Top Typists Worldwide</p>
+            <p class="last-updated" id="lastUpdated">Loading...</p>
+        </header>
+
+        <div class="category-tabs">
+            <button class="tab active" data-category="allTime">All Time</button>
+            <button class="tab" data-category="weekly">This Week</button>
+            <button class="tab" data-category="daily">Today</button>
+        </div>
+
+        <div class="sub-tabs">
+            <button class="sub-tab active" data-sort="byBestWPM">Best WPM</button>
+            <button class="sub-tab" data-sort="byAvgWPM">Avg WPM</button>
+            <button class="sub-tab" data-sort="byPracticeTime">Practice Time</button>
+        </div>
+
+        <table class="leaderboard-table" id="leaderboard">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Best WPM</th>
+                    <th>Avg WPM</th>
+                    <th class="hide-mobile">Practice Hours</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardBody">
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <h3>Loading leaderboard...</h3>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <footer>
+            <p>
+                <a href="https://github.com/farseenmanekhan1232/tkeybr" target="_blank">tkeybr</a> - 
+                Adaptive typing practice for everyone. 
+                <a href="https://github.com/farseenmanekhan1232/tkeybr#installation" target="_blank">Install now</a>
+            </p>
+            <p style="margin-top: 0.5rem;">
+                <a href="https://github.com/sponsors/farseenmanekhan1232" target="_blank">💖 Sponsor this project</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        let leaderboardData = null;
+        let currentCategory = 'allTime';
+        let currentSort = 'byBestWPM';
+
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch('leaderboard.json');
+                if (!response.ok) throw new Error('Failed to load data');
+                leaderboardData = await response.json();
+                
+                // Update last updated time
+                const lastUpdated = new Date(leaderboardData.lastUpdated);
+                document.getElementById('lastUpdated').textContent = 
+                    `Last updated: ${lastUpdated.toLocaleDateString()} ${lastUpdated.toLocaleTimeString()}`;
+                
+                renderLeaderboard();
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                document.getElementById('leaderboardBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <h3>Could not load leaderboard</h3>
+                            <p>Please try again later</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function getMedal(rank) {
+            if (rank === 1) return '🥇';
+            if (rank === 2) return '🥈';
+            if (rank === 3) return '🥉';
+            return '';
+        }
+
+        function renderLeaderboard() {
+            if (!leaderboardData) return;
+            
+            const categoryData = leaderboardData.categories[currentCategory];
+            if (!categoryData) {
+                document.getElementById('leaderboardBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <h3>No data available</h3>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Check if sort option exists for this category
+            let sortedData = categoryData[currentSort];
+            if (!sortedData) {
+                // Fall back to first available sort
+                sortedData = categoryData.byBestWPM || categoryData[Object.keys(categoryData)[0]];
+            }
+
+            if (!sortedData || sortedData.length === 0) {
+                document.getElementById('leaderboardBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <h3>No entries yet</h3>
+                            <p>Be the first to join the leaderboard!</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const rows = sortedData.map(entry => `
+                <tr>
+                    <td class="rank ${entry.rank <= 3 ? 'rank-' + entry.rank : ''}">
+                        <span class="medal">${getMedal(entry.rank)}</span>
+                        ${entry.rank}
+                    </td>
+                    <td class="display-name">${escapeHtml(entry.displayName)}</td>
+                    <td class="wpm">${entry.bestWPM}</td>
+                    <td class="stat">${entry.avgWPM}</td>
+                    <td class="stat hide-mobile">${entry.practiceHours}h</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('leaderboardBody').innerHTML = rows;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Tab event listeners
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentCategory = tab.dataset.category;
+                renderLeaderboard();
+            });
+        });
+
+        document.querySelectorAll('.sub-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentSort = tab.dataset.sort;
+                renderLeaderboard();
+            });
+        });
+
+        // Load data on page load
+        loadLeaderboard();
+    </script>
+</body>
+</html>
