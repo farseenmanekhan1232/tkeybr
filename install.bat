@@ -18,9 +18,9 @@ echo.
 
 REM Detect architecture
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
-    set ARCH=x86_64
+    set ARCH=amd64
 ) else if "%PROCESSOR_ARCHITECTURE%"=="x86" (
-    set ARCH=i386
+    set ARCH=386
 ) else (
     echo [ERROR] Unsupported architecture: %PROCESSOR_ARCHITECTURE%
     exit /b 1
@@ -39,8 +39,9 @@ if "%VERSION%"=="" (
 
 echo [INFO] Latest version: %VERSION%
 
-REM Construct download URL
-set FILENAME=%BINARY_NAME%_Windows_%ARCH%.zip
+REM Construct download URL - GoReleaser format: tkeybr_0.5.0_windows_amd64.zip
+set VERSION_NUM=%VERSION:~1%
+set FILENAME=%BINARY_NAME%_%VERSION_NUM%_windows_%ARCH%.zip
 set DOWNLOAD_URL=https://github.com/%REPO%/releases/download/%VERSION%/%FILENAME%
 
 REM Create install directory

@@ -14,8 +14,8 @@ Write-Host "  ╚═════════════════════
 Write-Host ""
 
 # Detect architecture
-$ARCH = if ([Environment]::Is64BitOperatingSystem) { "x86_64" } else { "i386" }
-Write-Host "[INFO] Detected: Windows/$ARCH" -ForegroundColor Green
+$ARCH = if ([Environment]::Is64BitOperatingSystem) { "amd64" } else { "386" }
+Write-Host "[INFO] Detected: windows/$ARCH" -ForegroundColor Green
 
 # Get latest version
 Write-Host "[INFO] Fetching latest release..." -ForegroundColor Green
@@ -23,8 +23,9 @@ $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$REPO/releases/l
 $VERSION = $release.tag_name
 Write-Host "[INFO] Latest version: $VERSION" -ForegroundColor Green
 
-# Download URL
-$FILENAME = "${BINARY_NAME}_Windows_${ARCH}.zip"
+# Download URL - GoReleaser format: tkeybr_0.5.0_windows_amd64.zip
+$VERSION_NUM = $VERSION.TrimStart('v')
+$FILENAME = "${BINARY_NAME}_${VERSION_NUM}_windows_${ARCH}.zip"
 $DOWNLOAD_URL = "https://github.com/$REPO/releases/download/$VERSION/$FILENAME"
 
 # Install directory

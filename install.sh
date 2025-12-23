@@ -69,28 +69,23 @@ main() {
     info "Latest version: ${VERSION}"
 
     # Construct download URL
-    # GoReleaser format: tkeybr_Linux_x86_64.tar.gz
+    # GoReleaser format: tkeybr_0.4.0_darwin_amd64.tar.gz
+    # Uses lowercase OS, version number, and amd64/arm64
     OS_NAME="$OS"
     ARCH_NAME="$ARCH"
     
-    # Map to GoReleaser naming convention
-    case "$OS" in
-        darwin) OS_NAME="Darwin" ;;
-        linux)  OS_NAME="Linux" ;;
-        windows) OS_NAME="Windows" ;;
-    esac
-    
-    case "$ARCH" in
-        amd64) ARCH_NAME="x86_64" ;;
-        arm64) ARCH_NAME="arm64" ;;
-    esac
+    # Architecture naming matches GoReleaser (amd64, arm64)
+    # No conversion needed for arch
 
     EXT="tar.gz"
     if [ "$OS" = "windows" ]; then
         EXT="zip"
     fi
 
-    FILENAME="${BINARY_NAME}_${OS_NAME}_${ARCH_NAME}.${EXT}"
+    # Version without 'v' prefix for filename
+    VERSION_NUM="${VERSION#v}"
+    
+    FILENAME="${BINARY_NAME}_${VERSION_NUM}_${OS_NAME}_${ARCH_NAME}.${EXT}"
     DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${VERSION}/${FILENAME}"
 
     info "Downloading ${FILENAME}..."
