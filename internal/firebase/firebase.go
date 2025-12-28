@@ -82,15 +82,24 @@ func (a *App) VerifyIDToken(ctx context.Context, idToken string) (string, error)
 }
 
 // GetOrCreateUser gets or creates a Firebase user from Google OAuth info
-func (a *App) GetOrCreateUser(ctx context.Context, email, displayName, photoURL string) (*auth.UserRecord, error) {
-	// Try to get existing user by email
-	user, err := a.auth.GetUserByEmail(ctx, email)
+func (a *App) GetOrCreateUser(ctx context.Context, uid, email, displayName, photoURL string) (*auth.UserRecord, error) {
+	// 1. Try to get existing user by UID (preferred stable ID)
+	user, err := a.auth.GetUser(ctx, uid)
 	if err == nil {
 		return user, nil
 	}
 
-	// Create new user if not found
+	// 2. Try to get existing user by email (legacy fallback)
+	user, err = a.auth.GetUserByEmail(ctx, email)
+	if err == nil {
+		// Found by email but UID is different - this is a legacy user
+		// We could migrate them here, but for now just return the existing user
+		return user, nil
+	}
+
+	// 3. Create new user with specific UID
 	params := (&auth.UserToCreate{}).
+		UID(uid).
 		Email(email).
 		DisplayName(displayName).
 		PhotoURL(photoURL).

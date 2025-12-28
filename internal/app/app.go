@@ -268,7 +268,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.firebaseApp != nil {
 				ctx := context.Background()
 				// Get or create Firebase user
-				firebaseUser, err := m.firebaseApp.GetOrCreateUser(ctx, msg.user.Email, msg.user.Name, msg.user.Picture)
+				firebaseUser, err := m.firebaseApp.GetOrCreateUser(ctx, msg.user.ID, msg.user.Email, msg.user.Name, msg.user.Picture)
 				if err == nil {
 					m.auth.SetFirebaseUID(firebaseUser.UID)
 
